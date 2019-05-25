@@ -220,13 +220,14 @@ def GetMetadata(media, movie, error_log, source, AniDBid, TVDBid, AniDBMovieSets
       studios      = {}
       creators     = {}
       for creator in xml.xpath('creators/name'):
-        for tag in creator_tags:
-          # if tag != creator.get('type'):  continue
-          creator_text = getAltName('creator',creator.get('id'),creator.text)
-          if creator_tags[tag]=="studio":
-            studios[tag] = creator_text
-          else:
-            SaveDict([creator_text], creators, creator_tags[tag])
+        tag = creator.get('type')
+        if tag in creator_tags:
+          tag = creator_tags[tag]
+        creator_text = getAltName('creator',creator.get('id'),creator.text)
+        if tag=="studio":
+          studios[creator.get('type')] = creator_text
+        else:
+          SaveDict([creator_text], creators, tag)
       if is_primary_entry:
         Log.Info("[ ] studio: {}".format(SaveDict(Dict(studios, "Animation Work", default=Dict(studios, "Work")), AniDB_dict, 'studio')))
 

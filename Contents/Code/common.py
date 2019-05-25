@@ -413,6 +413,7 @@ def LoadFile(filename="", relativeDirectory="", url="", cache=CACHE_1DAY*6, head
       file_downloaded_object = ObjectFromFile(file_downloaded)
       if not file_downloaded_object:                         Log.Info('[!] File received but failed validity,   file: "{}"'.format(file));  file_downloaded=None
       elif url.endswith('.xml') and len(file_downloaded)<24: Log.Info('[!] File received too small (<24 bytes), file: "{}"'.format(file));  file_downloaded=None
+      elif 'AntiLeech' in file_downloaded:                   Log.Info('[!] File received AntiLeech, file: "{}"'.format(file));  file_downloaded=None
       else:                                                  SaveFile(filename, file_downloaded, relativeDirectory);  return file_downloaded_object
   
   return file_object
