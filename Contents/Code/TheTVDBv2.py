@@ -229,15 +229,15 @@ def GetMetadata(media, movie, error_log, lang, metadata_source, AniDBid, TVDBid,
       fm = re.match(r'((?P<abs>\d+) \()?s(?P<s>\d+)e(?P<e>\d+)\)?', first_entry).groupdict()
       lm = re.match(r'((?P<abs>\d+) \()?s(?P<s>\d+)e(?P<e>\d+)\)?', last_entry ).groupdict()
       episode_missing.append("s{}e{}-{}".format(fm['s'], fm['e'], lm['e']) if fm['abs'] is None else "{}-{} (s{}e{}-{})".format(fm['abs'], lm['abs'], fm['s'], fm['e'], lm['e']))
-
     # Set the min/max season to ints & update max value to the next min-1 to handle multi tvdb season anidb entries
     map_min_values = [int(Dict(mappingList, 'season_map')[x]['min']) for x in Dict(mappingList, 'season_map', default={}) for y in Dict(mappingList, 'season_map')[x] if y=='min']
     for entry in Dict(mappingList, 'season_map', default={}):
       entry_min, entry_max = int(mappingList['season_map'][entry]['min']), int(mappingList['season_map'][entry]['max'])
+      if entry_max > max_season:
+        continue # Temp fix for entry_max > max_season causing infinity loop due to unknown reason (BanG Dream)
       while entry_min!=0 and entry_max+1 not in map_min_values + [max_season+1]:  entry_max += 1
       mappingList['season_map'][entry] = {'min': entry_min, 'max': entry_max}
     SaveDict(max_season, mappingList, 'season_map', 'max_season')
-
     ### Logging ###
     if not movie:
       if summary_missing:          error_log['Missing Episode Summaries'].append("TVDBid: %s | Title: '%s' | Missing Episode Summaries: %s" % (common.WEB_LINK % (common.TVDB_SERIE_URL + TVDBid, TVDBid), Dict(TheTVDB_dict, 'title'), str(summary_missing        )))
