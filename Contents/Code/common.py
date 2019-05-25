@@ -711,16 +711,19 @@ def UpdateMeta(metadata, media, movie, MetaSources, mappingList):
       if source in MetaSources:
         #For AniDB assigned series will favor AniDB summary even if TheTVDB is before in the source order for summary fields IF the anidb series is not mapped to TheTVDB season 1.
         if Dict(MetaSources, source, field):
-          if field=='genres'and ('|' in MetaSources[source]['genres'] or ',' in MetaSources[source]['genres']):
-            MetaSources[source]['genres'] = MetaSources[source]['genres'].split('|' if '|' in MetaSources[source]['genres'] else ',')
-            MetaSources[source]['genres'].extend( Other_Tags(media, movie, Dict(MetaSources, 'AniDB', 'status')) )
+          if field=='genres' and ('|' in MetaSources[source]['genres'] or ',' in MetaSources[source]['genres']):
+            if MetaSources[source]['genres'] is None:
+              MetaSources[source]['genres'] = []
+            MetaSources[source]['genres'].extend(MetaSources[source]['genres'].split('|' if '|' in MetaSources[source]['genres'] else ','))
+            MetaSources[source]['genres'].extend(Other_Tags(media, movie, Dict(MetaSources, 'AniDB', 'status')) )
+            MetaSources[source]['genres'] = list(set(MetaSources[source]['genres']))
           if field=='title':
             title, rank = Dict(MetaSources, source, 'title'), Dict(MetaSources, source, 'language_rank')
             if rank in (None, ''):  rank = len(languages)
             if rank<language_rank:  MetaSources[source]['title_sort'], language_rank, language_source = SortTitle(title, IsIndex(languages, rank)), rank, source
           else:  UpdateMetaField(metadata, metadata, MetaSources[source], FieldListMovies if movie else FieldListSeries, field, source, movie, source_list)
           if field in count:  count[field] = count[field] + 1
-          if field!='title' and (field not in ['posters', 'art', 'banners', 'themes', 'thumbs', 'title']):  break
+          if field!='title' and (field not in ['posters', 'art', 'banners', 'themes', 'thumbs', 'title', 'genres']):  break
       elif not source=="None":  Log.Info("[!] '{}' source not in MetaSources dict, please Check case and spelling".format(source))
     else:
       if field=='title':                                                     UpdateMetaField(metadata, metadata, Dict(MetaSources, language_source, default={}), FieldListMovies if movie else FieldListSeries, 'title', language_source, movie, source_list)  #titles have multiple assignments, adding only once otherwise duplicated field outputs in logs
