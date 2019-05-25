@@ -11,6 +11,7 @@ import string    # Functions:
 import datetime  # Functions: 
 import time      # Functions: 
 import AnimeLists
+from AniDBextra import getAltName
 from common import GetXml, Dict, SaveDict, natural_sort_key, Log, DictString
 from lxml   import etree
 ns = etree.FunctionNamespace(None)
@@ -207,7 +208,9 @@ def GetMetadata(media, movie, error_log, source, AniDBid, TVDBid, AniDBMovieSets
         for role in xml.xpath('characters/character[(@type="secondary cast in") or (@type="main character in")]'):
           try:
             if GetXml(role, 'seiyuu') and GetXml(role, 'name'):  
-              role_dict = {'role': role.find('name').text, 'name': role.find('seiyuu').text, 'photo': ANIDB_PIC_BASE_URL + role.find('seiyuu').get('picture')}
+              character = getAltName('character',role.get('id'),role.find('name').text)
+              creator = getAltName('creator',role.find('seiyuu').get('id'),role.find('seiyuu').text)
+              role_dict = {'role': character, 'name': creator, 'photo': ANIDB_PIC_BASE_URL + role.find('seiyuu').get('picture')}
               SaveDict([role_dict], AniDB_dict, 'roles')
               Log.Info('[ ] role: {:<20}, name: {:<20}, photo: {}'.format(role_dict['role'], role_dict['name'], role_dict['photo']))
           except Exception as e:  Log.Info("Seyiuu error: {}".format(e))
