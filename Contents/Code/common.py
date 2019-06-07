@@ -721,7 +721,7 @@ def UpdateMeta(metadata, media, movie, MetaSources, mappingList):
           if field=='title':
             title, rank = Dict(MetaSources, source, 'title'), Dict(MetaSources, source, 'language_rank')
             if rank in (None, ''):  rank = len(languages)
-            if rank<language_rank:  MetaSources[source]['title_sort'], language_rank, language_source = SortTitle(title, IsIndex(languages, rank)), rank, source
+            if rank<language_rank:  _, language_rank, language_source = SortTitle(title, IsIndex(languages, rank)), rank, source
           else:  UpdateMetaField(metadata, metadata, MetaSources[source], FieldListMovies if movie else FieldListSeries, field, source, movie, source_list)
           if field in count:  count[field] = count[field] + 1
           if field!='title' and (field not in ['posters', 'art', 'banners', 'themes', 'thumbs', 'title', 'genres']):  break

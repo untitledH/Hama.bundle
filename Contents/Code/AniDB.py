@@ -160,17 +160,23 @@ def GetMetadata(media, movie, error_log, source, AniDBid, TVDBid, AniDBMovieSets
       if isinstance(xml, str):  Log.Error('Invalid str returned: "{}"'.format(xml))
 
       title, original_title, language_rank = GetAniDBTitle(AniDBTitlesDB.xpath('/animetitles/anime[@aid="{}"]/title'.format(AniDBid)))
+      # Force sort title to en
+      title_sort, _, _ =  GetAniDBTitle(AniDBTitlesDB.xpath('/animetitles/anime[@aid="{}"]/title'.format(AniDBid)),lang=['en'],title_sort=True)
       if is_primary_entry:
         Log.Info("[ ] title: {}"         .format(SaveDict(title,          AniDB_dict, 'title'         )))
         Log.Info("[ ] original_title: {}".format(SaveDict(original_title, AniDB_dict, 'original_title')))
         Log.Info("[ ] language_rank: {}" .format(SaveDict(language_rank,  AniDB_dict, 'language_rank' )))
+        Log.Info("[ ] title_sort: {}".format(SaveDict(title_sort, AniDB_dict, 'title_sort')))
 
     elif xml:
       title, original_title, language_rank = GetAniDBTitle(xml.xpath('/anime/titles/title'))
+      # Force sort title to en
+      title_sort, _, _ =  GetAniDBTitle(xml.xpath('/anime/titles/title'),lang=['en'],title_sort=True)
       if is_primary_entry:  ### for each main anime AniDBid ###
         Log.Info("[ ] title: {}"         .format(SaveDict(title,          AniDB_dict, 'title'         )))
         Log.Info("[ ] original_title: {}".format(SaveDict(original_title, AniDB_dict, 'original_title')))
         Log.Info("[ ] language_rank: {}" .format(SaveDict(language_rank,  AniDB_dict, 'language_rank' )))
+        Log.Info("[ ] title_sort: {}".format(SaveDict(title_sort, AniDB_dict, 'title_sort')))
         if SaveDict( GetXml(xml, 'startdate'  ), AniDB_dict, 'originally_available_at'):  Log.Info("[ ] originally_available_at: '{}'".format(AniDB_dict['originally_available_at']))
         if SaveDict(summary_sanitizer(GetXml(xml, 'description')), AniDB_dict, 'summary') and not movie and Dict(mappingList, 'defaulttvdbseason').isdigit() and mappingList['defaulttvdbseason'] in media.seasons:
           SaveDict(AniDB_dict['summary'], AniDB_dict, 'seasons', mappingList['defaulttvdbseason'], 'summary') 
@@ -224,11 +230,14 @@ def GetMetadata(media, movie, error_log, source, AniDBid, TVDBid, AniDBMovieSets
         if tag in creator_tags:
           tag = creator_tags[tag]
         creator_text = getAltName('creator',creator.get('id'),creator.text)
+        if tag=="studio" and not creator.get('type') in studios:
+          studios[creator.get('type')] = creator.text
         if tag=="studio":
-          studios[creator.get('type')] = creator_text
-        else:
-          SaveDict([creator_text], creators, tag)
+          SaveDict([creator.text], creators, tag)
+        SaveDict([creator_text], creators, tag)
       if is_primary_entry:
+        Log.Info(repr(studios))
+        Log.Info(repr(creators))
         Log.Info("[ ] studio: {}".format(SaveDict(Dict(studios, "Animation Work", default=Dict(studios, "Work")), AniDB_dict, 'studio')))
 
       Log.Info("[ ] movie: {}".format(SaveDict(GetXml(xml, 'type')=='Movie', AniDB_dict, 'movie')))
